@@ -17,7 +17,13 @@
 
 Important note: Kiwi Browser is now archived. It will no longer be maintained after January 2025.
 
-The extensions code for Kiwi Browser has now been integrated into [Microsoft Edge Canary](https://play.google.com/store/apps/details?id=com.microsoft.emmx.canary).
+<img src="https://edgemobilegrowth.microsoft.com/extension/kiwi_to_edge.jpeg" height="100" />
+
+To support users who rely on extensions, we've partnered with the Microsoft Edge team to offer a smooth migration path.
+
+Clicking <a href="https://edgemobileapp.microsoft.com/?adjustId=1mfkz3u3_1m6jnsdw">the link</a> will prompt you to install Microsoft Edge, reveal a hidden message in the Edge Extensions Hub, and uNBlock a powerful Manifest V2 extension there.
+
+The extensions code for Kiwi Browser also has been integrated into the development version of Microsoft Edge: [Microsoft Edge Canary](https://play.google.com/store/apps/details?id=com.microsoft.emmx.canary).
 
 To install extensions on Microsoft Edge Canary:
 
@@ -33,7 +39,7 @@ To find the extension ID:
 4. Paste the extension ID into the **Extension install by id** field.  
 5. The extension will install.  
 
-If you really need Kiwi Browser, you can download the [latest published version of Kiwi Browser here](https://github.com/kiwibrowser/src.next/releases/tag/12867802748). Do not download Kiwi Browser from any other sources.
+If you really need Kiwi Browser, you can download the [latest published version of Kiwi Browser here](https://github.com/kiwibrowser/src.next/releases/tag/14310011181). Do not download Kiwi Browser from any other sources.
 
 While your Kiwi Browser installation will still work for some time, it’s essential to explore alternatives like [Microsoft Edge Canary](https://play.google.com/store/apps/details?id=com.microsoft.emmx.canary), [Vivaldi Browser](https://play.google.com/store/apps/details?id=com.vivaldi.browser) or [Mozilla Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) to stay secure and up-to-date.
 
