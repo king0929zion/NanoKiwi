@@ -148,9 +148,29 @@ jobs:
           EOF
           cat out/Default/args.gn
 
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ runner.os }}-chromium-${{ matrix.platform }}
+          max-size: 2G
+
       - name: Generate build files
         run: |
           export PATH="$PWD/depot_tools:$PATH"
+          # Check if .gclient exists, if not create it
+          if [ ! -f .gclient ]; then
+            echo "Creating .gclient file..."
+            cat > .gclient << 'EOF'
+          solutions = [
+            {
+              "name": "src",
+              "url": "https://chromium.googlesource.com/chromium/src.git@main",
+              "managed": False,
+              "custom_deps": {},
+            },
+          ]
+          EOF
+          fi
           gn gen out/Default --args='import("//out/Default/args.gn")'
         continue-on-error: true
 
@@ -159,7 +179,8 @@ jobs:
         run: |
           export PATH="$PWD/depot_tools:$PATH"
           export CCACHE_DIR="$HOME/.ccache"
-          ccache -M 10G
+          ccache -M 2G
+          ccache -s
           autoninja -C out/Default chrome_public_apk
         continue-on-error: true
 
