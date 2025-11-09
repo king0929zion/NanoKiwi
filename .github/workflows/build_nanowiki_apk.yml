@@ -69,6 +69,7 @@ jobs:
             curl \
             wget \
             unzip \
+            rsync \
             build-essential \
             ninja-build \
             pkg-config \
@@ -128,8 +129,49 @@ jobs:
             echo "key_password=nanowiki123" >> keystore.properties
           fi
 
-      - name: Create build configuration
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ runner.os }}-chromium-${{ matrix.platform }}
+          max-size: 2G
+
+      - name: Setup Chromium source tree
+        timeout-minutes: 60
         run: |
+          export PATH="$PWD/depot_tools:$PATH"
+          # Create .gclient file to sync Chromium source
+          cat > .gclient << 'EOF'
+          solutions = [
+            {
+              "name": "src",
+              "url": "https://chromium.googlesource.com/chromium/src.git@main",
+              "managed": False,
+              "custom_deps": {},
+            },
+          ]
+          EOF
+          # Sync Chromium source code (shallow sync to save time and space)
+          echo "Syncing Chromium source code (this may take a while)..."
+          gclient sync --no-history --shallow --jobs=16 --nohooks || {
+            echo "Warning: gclient sync failed or incomplete, continuing anyway..."
+          }
+          
+          # Copy current repository files over Chromium source (overwrite with custom changes)
+          if [ -d "src" ]; then
+            echo "Applying custom changes from repository..."
+            rsync -av --exclude='.git' --exclude='.github' --exclude='out' --exclude='.gclient' --exclude='src' ./ src/ || {
+              echo "Warning: Failed to apply custom changes, continuing anyway..."
+            }
+          else
+            echo "Error: Chromium source directory 'src' not found after sync"
+            exit 1
+          fi
+
+      - name: Generate build files
+        run: |
+          export PATH="$PWD/depot_tools:$PATH"
+          cd src || exit 1
           mkdir -p out/Default
           cat > out/Default/args.gn << 'EOF'
           target_os = "android"
@@ -149,31 +191,7 @@ jobs:
           android_default_version_code = "${{ github.run_number }}000000"
           EOF
           cat out/Default/args.gn
-
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ${{ runner.os }}-chromium-${{ matrix.platform }}
-          max-size: 2G
-
-      - name: Generate build files
-        run: |
-          export PATH="$PWD/depot_tools:$PATH"
-          # Check if .gclient exists, if not create it
-          if [ ! -f .gclient ]; then
-            echo "Creating .gclient file..."
-            cat > .gclient << 'EOF'
-          solutions = [
-            {
-              "name": "src",
-              "url": "https://chromium.googlesource.com/chromium/src.git@main",
-              "managed": False,
-              "custom_deps": {},
-            },
-          ]
-          EOF
-          fi
-          gn gen out/Default --args='import("//out/Default/args.gn")'
+          gn gen out/Default
         continue-on-error: true
 
       - name: Build APK
@@ -181,6 +199,7 @@ jobs:
         run: |
           export PATH="$PWD/depot_tools:$PATH"
           export CCACHE_DIR="$HOME/.ccache"
+          cd src || exit 1
           ccache -M 2G
           ccache -s
           autoninja -C out/Default chrome_public_apk
@@ -189,6 +208,7 @@ jobs:
       - name: Find and sign APK
         if: always()
         run: |
+          cd src || exit 1
           # Find the built APK
           if [ -f "out/Default/apks/ChromePublic.apk" ]; then
             APK_FILE="out/Default/apks/ChromePublic.apk"
@@ -204,6 +224,10 @@ jobs:
           fi
           
           echo "Found APK: $APK_FILE"
+          
+          # Copy keystore files to src directory
+          cp ../keystore.jks . || cp keystore.jks . || true
+          cp ../keystore.properties . || cp keystore.properties . || true
           
           # Read keystore properties
           source keystore.properties
@@ -224,7 +248,10 @@ jobs:
           # Verify signature
           jarsigner -verify -verbose -certs "$SIGNED_APK"
           
-          echo "APK_FILE=$SIGNED_APK" >> $GITHUB_ENV
+          # Copy signed APK back to workspace root
+          cp "$SIGNED_APK" "../$SIGNED_APK" || true
+          
+          echo "APK_FILE=src/$SIGNED_APK" >> $GITHUB_ENV
           echo "APK_SIZE=$(du -h $SIGNED_APK | cut -f1)" >> $GITHUB_ENV
 
       - name: Upload APK artifact
@@ -234,7 +261,8 @@ jobs:
           name: nanowiki-apk-${{ matrix.platform }}
           path: |
             ${{ env.APK_FILE }}
-            out/Default/apks/*.apk
+            src/out/Default/apks/*.apk
+            NanoWiki-*.apk
           retention-days: 30
           if-no-files-found: warn
 
@@ -285,6 +313,6 @@ jobs:
         with:
           name: build-logs-${{ matrix.platform }}
           path: |
-            out/Default/*.log
-            out/Default/.ninja_log
+            src/out/Default/*.log
+            src/out/Default/.ninja_log
           retention-days: 7
