@@ -39,7 +39,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [${{ github.event_name == 'workflow_dispatch' && github.event.inputs.platform || 'arm64' }}]
+        platform: ['arm64']
+        include:
+          - platform: ${{ github.event.inputs.platform || 'arm64' }}
     
     steps:
       - name: Checkout code
