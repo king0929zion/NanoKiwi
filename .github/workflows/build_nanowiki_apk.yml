@@ -133,7 +133,7 @@ jobs:
           max-size: 2G
 
       - name: Setup Chromium source tree
-        timeout-minutes: 60
+        timeout-minutes: 120
         run: |
           export PATH="$PWD/depot_tools:$PATH"
           # Create .gclient file to sync Chromium source
@@ -148,10 +148,38 @@ jobs:
           ]
           EOF
           # Sync Chromium source code (shallow sync to save time and space)
-          echo "Syncing Chromium source code (this may take a while)..."
-          gclient sync --no-history --shallow --jobs=16 --nohooks || {
-            echo "Warning: gclient sync failed or incomplete, continuing anyway..."
-          }
+          echo "Syncing Chromium source code (this may take 30-60 minutes)..."
+          echo "This is a large download (~10GB+), please be patient..."
+          
+          # Retry logic for gclient sync
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          SYNC_SUCCESS=false
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES..."
+            if gclient sync --no-history --shallow --jobs=16 --nohooks --verbose; then
+              SYNC_SUCCESS=true
+              break
+            else
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "Sync failed, waiting 30 seconds before retry..."
+                sleep 30
+              fi
+            fi
+          done
+          
+          if [ "$SYNC_SUCCESS" = false ]; then
+            echo "Error: gclient sync failed after $MAX_RETRIES attempts"
+            echo "Checking if src directory exists..."
+            if [ -d "src" ]; then
+              echo "Warning: Partial sync detected, continuing with existing files..."
+            else
+              echo "Error: Chromium source directory 'src' not found"
+              exit 1
+            fi
+          fi
           
           # Copy current repository files over Chromium source (overwrite with custom changes)
           if [ -d "src" ]; then
@@ -159,6 +187,7 @@ jobs:
             rsync -av --exclude='.git' --exclude='.github' --exclude='out' --exclude='.gclient' --exclude='src' ./ src/ || {
               echo "Warning: Failed to apply custom changes, continuing anyway..."
             }
+            echo "Custom changes applied successfully"
           else
             echo "Error: Chromium source directory 'src' not found after sync"
             exit 1
