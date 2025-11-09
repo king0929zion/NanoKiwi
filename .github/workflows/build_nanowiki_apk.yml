@@ -3,12 +3,8 @@ name: 'Build NanoWiki APK'
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - kiwi
-    tags:
-      - 'v*'
+    # Build on all branch pushes
+    # Tags are also included in push events
   pull_request:
     branches:
       - main
@@ -93,16 +89,16 @@ jobs:
 
       - name: Configure Android environment
         run: |
-          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
 
       - name: Install depot_tools
         run: |
           git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
           export PATH="$PWD/depot_tools:$PATH"
-          echo "$PWD/depot_tools" >> $GITHUB_PATH
+          echo "$PWD/depot_tools" >> "$GITHUB_PATH"
           gclient --version
 
       - name: Setup signing key
@@ -243,16 +239,16 @@ jobs:
             "$key_alias"
           
           # Align APK
-          zipalign -v 4 "$APK_FILE" "$SIGNED_APK"
+          zipalign -v 4 "$APK_FILE" "${SIGNED_APK}"
           
           # Verify signature
           jarsigner -verify -verbose -certs "$SIGNED_APK"
           
           # Copy signed APK back to workspace root
-          cp "$SIGNED_APK" "../$SIGNED_APK" || true
+          cp "$SIGNED_APK" "../${SIGNED_APK}" || true
           
-          echo "APK_FILE=src/$SIGNED_APK" >> $GITHUB_ENV
-          echo "APK_SIZE=$(du -h $SIGNED_APK | cut -f1)" >> $GITHUB_ENV
+          echo "APK_FILE=src/${SIGNED_APK}" >> "$GITHUB_ENV"
+          echo "APK_SIZE=$(du -h "${SIGNED_APK}" | cut -f1)" >> "$GITHUB_ENV"
 
       - name: Upload APK artifact
         if: always()
