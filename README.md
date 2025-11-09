@@ -107,9 +107,9 @@ Wiki 的界面设计完全参考 Anthropic/Claude 的风格：
 
 **配置签名密钥**（可选）：
 1. 生成密钥：`keytool -genkey -v -keystore keystore.jks -alias nanowiki ...`
-2. 转换为 Base64：`base64 -i keystore.jks`
+2. 转换为 base64：`base64 -i keystore.jks`
 3. 在 GitHub Secrets 中添加：
-   - `KEYSTORE_BASE64`: 密钥库 Base64
+   - `KEYSTORE_BASE64`: 密钥库 base64
    - `KEYSTORE_PASSWORD`: 密钥库密码
    - `KEY_PASSWORD`: 密钥密码
    - `KEY_ALIAS`: 密钥别名（默认: nanowiki）
