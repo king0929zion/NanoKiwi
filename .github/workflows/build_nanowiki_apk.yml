@@ -36,8 +36,6 @@ jobs:
       fail-fast: false
       matrix:
         platform: ['arm64']
-        include:
-          - platform: ${{ github.event.inputs.platform || 'arm64' }}
     
     steps:
       - name: Checkout code
