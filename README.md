@@ -92,9 +92,18 @@ Wiki 的界面设计完全参考 Anthropic/Claude 的风格：
 项目已配置 GitHub Actions 自动构建工作流（`.github/workflows/build_nanowiki_apk.yml`）。
 
 **触发方式**：
-- Push 到 main/master/kiwi 分支：自动构建
+- **所有分支推送**：每次推送代码都会自动触发完整构建
 - 创建 Tag (v*)：自动构建并创建 Release
-- 手动触发：在 Actions 页面手动运行
+- Pull Request：推送到 main/master/kiwi 分支的 PR 会触发构建
+- 手动触发：在 Actions 页面手动运行，可选择目标平台
+
+**构建流程**：
+1. 同步 Chromium 源码（约 30-60 分钟，自动重试机制）
+2. 应用自定义修改
+3. 生成构建配置
+4. 编译 APK（约 2-6 小时）
+5. 签名和打包
+6. 上传构建产物
 
 **配置签名密钥**（可选）：
 1. 生成密钥：`keytool -genkey -v -keystore keystore.jks -alias nanowiki ...`
@@ -105,7 +114,11 @@ Wiki 的界面设计完全参考 Anthropic/Claude 的风格：
    - `KEY_PASSWORD`: 密钥密码
    - `KEY_ALIAS`: 密钥别名（默认: nanowiki）
 
-**注意**：Chromium 完整构建在 GitHub Actions 免费版可能超时（需要 2-6 小时），建议使用自托管 Runner 或本地构建。
+**注意事项**：
+- Chromium 完整构建需要大量时间和资源（源码同步 30-60 分钟，构建 2-6 小时）
+- GitHub Actions 免费版单次运行最长 6 小时，可能无法完成完整构建
+- 建议使用自托管 Runner 或本地构建以获得更好的性能
+- 构建过程包含自动重试机制，提高成功率
 
 ### Wiki 扩展独立构建
 
@@ -126,6 +139,9 @@ pnpm build
 - ✅ 添加 AI 执行任务时的光效和暂停功能
 - ✅ 优化移动端适配
 - ✅ 配置 GitHub Actions 自动构建和签名
+- ✅ 优化构建流程：所有分支推送自动触发构建
+- ✅ 改进 Chromium 同步：添加重试机制和错误处理
+- ✅ 修复代码检查问题：通过所有 linter 检查
 
 ## 许可证
 
