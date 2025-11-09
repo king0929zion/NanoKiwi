@@ -1,0 +1,224 @@
+/* Anthropic/Claude inspired design - warm, neutral, minimalist */
+
+body {
+  border-color: #E5E5E0 !important;
+}
+
+code {
+  background: rgba(217, 119, 6, 0.1);
+  border-radius: 0.375rem;
+  padding: 0.2rem 0.5rem;
+  color: #B45309;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+}
+
+/* Dark mode support for code */
+@media (prefers-color-scheme: dark) {
+  code {
+    background: rgba(217, 119, 6, 0.15);
+    color: #FBBF24;
+  }
+}
+
+/* Scrollbar styles - Anthropic style */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FBFBF9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-track {
+    background: #1A1A1A;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #404040;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #525252;
+  }
+}
+
+/* Header styles */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: transparent;
+  border-bottom: 1px solid rgba(229, 229, 224, 0.5);
+}
+
+/* Dark mode header border */
+@media (prefers-color-scheme: dark) {
+  .header {
+    border-bottom: 1px solid rgba(64, 64, 64, 0.5);
+  }
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+}
+
+.header-icons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.header-icon {
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.8;
+}
+
+.header-icon:hover {
+  color: #374151;
+  opacity: 1;
+}
+
+/* Dark mode header icon */
+@media (prefers-color-scheme: dark) {
+  .header-icon {
+    color: #9CA3AF;
+  }
+  
+  .header-icon:hover {
+    color: #D1D5DB;
+  }
+}
+
+.send-button {
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.8;
+}
+
+.send-button:hover {
+  color: #374151;
+  opacity: 1;
+}
+
+.send-button:disabled {
+  color: #D1D5DB;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Dark mode send button */
+@media (prefers-color-scheme: dark) {
+  .send-button {
+    color: #9CA3AF;
+  }
+  
+  .send-button:hover {
+    color: #D1D5DB;
+  }
+  
+  .send-button:disabled {
+    color: #525252;
+  }
+}
+
+/* Scrollbar gutter */
+.scrollbar-gutter-stable {
+  scrollbar-gutter: stable;
+}
+
+.scrollbar-gutter-stable::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-gutter-stable::-webkit-scrollbar-track {
+  background: #FBFBF9;
+}
+
+.scrollbar-gutter-stable::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 4px;
+}
+
+.scrollbar-gutter-stable::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Dark mode scrollbar for scrollbar-gutter-stable */
+@media (prefers-color-scheme: dark) {
+  .scrollbar-gutter-stable::-webkit-scrollbar-track {
+    background: #1A1A1A;
+  }
+  
+  .scrollbar-gutter-stable::-webkit-scrollbar-thumb {
+    background: #404040;
+  }
+  
+  .scrollbar-gutter-stable::-webkit-scrollbar-thumb:hover {
+    background: #525252;
+  }
+}
+
+/* Dark mode text and background colors */
+@media (prefers-color-scheme: dark) {
+  .dark-mode-text {
+    color: #E5E5E0 !important;
+  }
+  
+  .dark-mode-bg {
+    background-color: #1A1A1A !important;
+  }
+  
+  .dark-mode-border {
+    border-color: #404040 !important;
+  }
+}
+
+/* Mobile responsive optimizations */
+@media (max-width: 768px) {
+  .header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .header-icon {
+    padding: 0.25rem;
+  }
+  
+  /* Optimize message list for mobile */
+  .scrollbar-gutter-stable {
+    padding: 0.75rem;
+  }
+  
+  /* Larger touch targets for mobile */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Optimize input area */
+  textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .header {
+    padding: 0.625rem 0.875rem;
+  }
+}
