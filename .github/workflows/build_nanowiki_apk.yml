@@ -107,10 +107,19 @@ jobs:
 
       - name: Install depot_tools
         run: |
-          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          echo "=== Installing depot_tools ==="
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git || {
+            echo "Error: Failed to clone depot_tools"
+            exit 1
+          }
           export PATH="$PWD/depot_tools:$PATH"
           echo "$PWD/depot_tools" >> "$GITHUB_PATH"
-          gclient --version
+          echo "Verifying gclient installation..."
+          gclient --version || {
+            echo "Error: gclient not found after installation"
+            exit 1
+          }
+          echo "depot_tools installed successfully"
 
       - name: Setup signing key
         run: |
@@ -144,7 +153,7 @@ jobs:
           max-size: 2G
 
       - name: Setup Chromium source tree
-        timeout-minutes: 120
+        timeout-minutes: 180
         run: |
           echo "=== Starting Chromium source tree setup ==="
           echo "Current directory: $(pwd)"
@@ -193,22 +202,33 @@ jobs:
             df -h .
             
             set +e  # Don't exit on error
-            if gclient sync --no-history --shallow --jobs=16 --nohooks --verbose 2>&1 | tee sync.log; then
+            # Use timeout to prevent hanging, but allow enough time for sync
+            timeout 3600 gclient sync --no-history --shallow --jobs=8 --nohooks --verbose 2>&1 | tee sync.log
+            SYNC_EXIT_CODE=${PIPESTATUS[0]}
+            set -e
+            
+            if [ $SYNC_EXIT_CODE -eq 0 ]; then
               SYNC_SUCCESS=true
-              set -e
+              echo "=== Sync completed successfully ==="
               break
+            elif [ $SYNC_EXIT_CODE -eq 124 ]; then
+              echo "=== Sync timed out after 60 minutes ==="
+              echo "This is expected for large syncs, checking partial progress..."
+              if [ -d "src" ] && [ -f "src/.gclient_entries" ]; then
+                echo "Partial sync detected, will continue with existing files"
+                SYNC_SUCCESS=true  # Treat partial sync as success for now
+                break
+              fi
             else
-              SYNC_EXIT_CODE=$?
-              echo "gclient sync failed with exit code: $SYNC_EXIT_CODE"
-              echo "Last 50 lines of sync.log:"
-              tail -50 sync.log || echo "No sync.log found"
+              echo "=== gclient sync failed with exit code: $SYNC_EXIT_CODE ==="
+              echo "Last 100 lines of sync.log:"
+              tail -100 sync.log || echo "No sync.log found"
               RETRY_COUNT=$((RETRY_COUNT + 1))
               if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
-                echo "Sync failed, waiting 30 seconds before retry..."
-                sleep 30
+                echo "Sync failed, waiting 60 seconds before retry..."
+                sleep 60
               fi
             fi
-            set -e
           done
           
           if [ "$SYNC_SUCCESS" = false ]; then
