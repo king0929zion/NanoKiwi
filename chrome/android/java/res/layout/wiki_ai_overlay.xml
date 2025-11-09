@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<org.chromium.chrome.browser.wiki.WikiAiOverlayView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/wiki_ai_overlay"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true"
+    android:visibility="gone">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_gravity="top"
+        android:background="@drawable/wiki_glow_vertical" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/wiki_glow_vertical"
+        android:rotation="180" />
+
+    <View
+        android:layout_width="48dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@drawable/wiki_glow_horizontal" />
+
+    <View
+        android:layout_width="48dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:background="@drawable/wiki_glow_horizontal"
+        android:rotation="180" />
+
+    <ImageButton
+        android:id="@+id/wiki_pause_button"
+        style="@style/Widget.AppCompat.ImageButton"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="72dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/wiki_overlay_pause"
+        android:src="@drawable/wiki_pause_icon" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:text="@string/wiki_overlay_caption"
+        android:textColor="@color/wiki_text_primary"
+        android:textSize="14sp" />
+</org.chromium.chrome.browser.wiki.WikiAiOverlayView>

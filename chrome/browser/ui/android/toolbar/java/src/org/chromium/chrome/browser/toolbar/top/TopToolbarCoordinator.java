@@ -733,4 +733,11 @@ public class TopToolbarCoordinator implements Toolbar {
     public StartSurfaceToolbarCoordinator getStartSurfaceToolbarForTesting() {
         return mStartSurfaceToolbarCoordinator;
     }
+
+    /** Propagates the Wiki assistant state to the active toolbar layout. */
+    public void setWikiAssistantActive(boolean active) {
+        if (mToolbarLayout != null) {
+            mToolbarLayout.setWikiAssistantActive(active);
+        }
+    }
 }

@@ -77,4 +77,26 @@
     <macro name="tab_layout_selected_tab_color">@macro/default_text_color_accent1</macro>
     <color name="web_notification_text">#CCCCCC</color>
 
+    <!-- Wiki AI palette -->
+    <color name="wiki_panel_scrim">#E6F7F1EA</color>
+    <color name="wiki_card_background">#FFFBF6</color>
+    <color name="wiki_glow_primary">#FFECD7</color>
+    <color name="wiki_glow_secondary">#D06B2A</color>
+    <color name="wiki_pause_icon_tint">#352017</color>
+    <color name="wiki_text_primary">#2B1F17</color>
+    <color name="wiki_text_secondary">#6B5A4D</color>
+    <color name="wiki_text_chip">#4F3828</color>
+    <color name="wiki_button_surface">#1A4F3828</color>
+    <color name="wiki_surface_muted">#FFF7F1EA</color>
+    <color name="wiki_surface_highlight">#FFFBF6</color>
+    <color name="wiki_border_soft">#E4D6C8</color>
+    <color name="wiki_accent">#D06B2A</color>
+    <color name="wiki_on_accent_text">#FFFFFFFF</color>
+    <color name="wiki_chip_surface">#FFF1E6D8</color>
+    <color name="wiki_chip_running">#FFE4C8</color>
+    <color name="wiki_chip_paused">#FFF4ECE2</color>
+    <color name="wiki_chip_completed">#EAF3EA</color>
+    <color name="wiki_chip_error">#F8D7D0</color>
+    <color name="wiki_overlay_glow">#33D06B2A</color>
+
 </resources>

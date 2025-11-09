@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    <path
+        android:fillColor="@color/wiki_surface_muted"
+        android:pathData="M18,2C9.16,2 2,9.16 2,18s7.16,16 16,16 16,-7.16 16,-16S26.84,2 18,2z" />
+    <path
+        android:fillColor="@color/wiki_accent"
+        android:pathData="M14.4,11.5c-0.66,0 -1.2,0.54 -1.2,1.2v10.6c0,0.66 0.54,1.2 1.2,1.2s1.2,-0.54 1.2,-1.2V12.7c0,-0.66 -0.54,-1.2 -1.2,-1.2zM21.6,11.5c-0.66,0 -1.2,0.54 -1.2,1.2v10.6c0,0.66 0.54,1.2 1.2,1.2s1.2,-0.54 1.2,-1.2V12.7c0,-0.66 -0.54,-1.2 -1.2,-1.2z" />
+</vector>

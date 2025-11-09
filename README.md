@@ -1,46 +1,68 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/kiwibrowser/src.next/kiwi/kiwi_logo_circle.svg" alt="KiwiBrowser"
-	title="KiwiBrowser" width="200" height="200"/>
- </p>
-<p align="center">
-  <a href="https://github.com/kiwibrowser/src.next/releases">
-  <img src="https://img.shields.io/github/v/release/kiwibrowser/src.next?include_prereleases&label=latest%20release"/>
-</a>
-  <a href="https://github.com/kiwibrowser/src.next/release">
-<img src="https://img.shields.io/github/downloads/kiwibrowser/src.next/total?label=GitHub%20Downloads&color=%6BDDD5"></a>
-<a href="https://github.com/kiwibrowser/src.next/blob/kiwi/LICENSE">
-  <img src="https://img.shields.io/github/license/kiwibrowser/src.next?color=%236BDDD5"/></a>
+# NanoWiki Browser
 
-  </p>
+NanoWiki 是基于 Chromium 的移动浏览器，内置原生 AI 助手 Wiki，提供智能网页自动化功能。
 
-# Kiwi Browser
+## 主要特性
 
-Important note: Kiwi Browser is now archived. It will no longer be maintained after January 2025.
+### 原生 AI 支持
+- **Wiki AI 助手**：内置的 AI 侧边栏，提供智能网页自动化功能
+- **Anthropic/Claude 风格 UI**：采用温暖、中性的配色方案，简洁优雅的界面设计
+- **移动端优化**：完全适配移动端的对话界面，提供流畅的用户体验
 
-<img src="https://edgemobilegrowth.microsoft.com/extension/kiwi_to_edge.jpeg" height="100" />
+### 浏览器功能
+- 基于 Chromium 内核，支持完整的网页浏览体验
+- 支持扩展程序安装
+- 隐私保护和广告拦截
+- 夜间模式、翻译等实用功能
 
-To support users who rely on extensions, we've partnered with the Microsoft Edge team to offer a smooth migration path.
+## Wiki AI 助手
 
-Clicking <a href="https://edgemobileapp.microsoft.com/?adjustId=1mfkz3u3_1m6jnsdw">the link</a> will prompt you to install Microsoft Edge, reveal a hidden message in the Edge Extensions Hub, and uNBlock a powerful Manifest V2 extension there.
+Wiki 是 NanoWiki 浏览器内置的原生 AI 助手，可以帮助用户：
+- 自动化网页任务
+- 采集和整理数据
+- 执行复杂的浏览流程
+- 提供智能建议和帮助
 
-The extensions code for Kiwi Browser also has been integrated into the development version of Microsoft Edge: [Microsoft Edge Canary](https://play.google.com/store/apps/details?id=com.microsoft.emmx.canary).
+### UI 设计
+Wiki 的界面设计完全参考 Anthropic/Claude 的风格：
+- **配色方案**：暖色调、中性色，无渐变设计
+- **圆角设计**：统一的圆角半径，简洁美观
+- **深色模式**：完整的深色模式支持
+- **无推广内容**：界面专注于功能本身，无任何推广信息
 
-To install extensions on Microsoft Edge Canary:
+### 使用方法
+1. 点击工具栏的 Wiki 图标打开侧边栏
+2. 首次使用时配置 API key（支持 Anthropic、OpenAI、Gemini、Ollama 等）
+3. 输入任务描述，Wiki 会自动执行并反馈结果
 
-1. Open **Microsoft Edge Canary** and go to **Settings > About Microsoft Edge**.  
-2. Tap the **Edge build number** (e.g., `xx.0.2487.0`) 5 times to enable **Developer Options**.  
-3. In Developer Options, select **Extension install by id**.  
+## 开发说明
 
-To find the extension ID:  
-- Open the [Microsoft Edge Web Store](https://microsoftedge.microsoft.com/addons/Microsoft-Edge-Extensions-Home).  
-- Locate and select the desired extension.  
-- Copy the ID from the URL (e.g., for Bitwarden, the ID is `jbkfoedolllekgbhcbcoahefnbanhhlh` from the URL ending).  
+### 项目结构
+- `chrome/` - Chromium 浏览器核心代码
+- `nanobrowser/` - Wiki AI 助手扩展代码
+- `chrome/android/` - Android 平台相关代码
 
-4. Paste the extension ID into the **Extension install by id** field.  
-5. The extension will install.  
+### 构建要求
+- Android SDK
+- Chromium 构建工具链
+- Node.js 和 pnpm（用于 Wiki 扩展开发）
 
-If you really need Kiwi Browser, you can download the [latest published version of Kiwi Browser here](https://github.com/kiwibrowser/src.next/releases/tag/14310011181). Do not download Kiwi Browser from any other sources.
+### 最近更新
+- ✅ 将浏览器名称从 Kiwi Browser 更改为 NanoWiki
+- ✅ 将 nanobrowser 插件名称更改为 Wiki
+- ✅ 优化 Wiki UI，采用 Anthropic/Claude 风格设计
+- ✅ 移除所有推广内容（GitHub、Discord 等）
+- ✅ 更新配色方案为温暖中性色调
+- ✅ 完善深色模式支持
 
-While your Kiwi Browser installation will still work for some time, it’s essential to explore alternatives like [Microsoft Edge Canary](https://play.google.com/store/apps/details?id=com.microsoft.emmx.canary), [Vivaldi Browser](https://play.google.com/store/apps/details?id=com.vivaldi.browser) or [Mozilla Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) to stay secure and up-to-date.
+## 许可证
 
--- Arnaud.
+本项目基于 Apache 2.0 许可证开源。
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request 来改进 NanoWiki 浏览器。
+
+---
+
+Copyright © 2025 NanoWiki.

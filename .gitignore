@@ -30,3 +30,23 @@ jspm_packages/
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+
+# Build outputs
+out/
+.gclient
+.gclient_entries
+*.jks
+keystore.properties
+*.apk
+*.aab
+*.apks
+
+# Android
+.idea/
+*.iml
+local.properties
+
+# Chromium build
+.gn
+.ninja_deps
+.ninja_log

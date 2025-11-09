@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<org.chromium.chrome.browser.wiki.WikiPanelView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/wiki_panel_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="false"
+    android:focusable="false"
+    android:visibility="gone">
+
+    <View
+        android:id="@+id/wiki_panel_scrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/wiki_panel_scrim" />
+
+    <LinearLayout
+        android:id="@+id/wiki_panel_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="16dp"
+        android:background="@drawable/wiki_panel_card_background"
+        android:elevation="8dp"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:contentDescription="@string/wiki_panel_title"
+                android:src="@drawable/wiki_ai_icon" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/wiki_panel_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/wiki_panel_title"
+                    android:textColor="@color/wiki_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/wiki_panel_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/wiki_panel_description"
+                    android:textColor="@color/wiki_text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/wiki_close_button"
+                style="@style/Widget.AppCompat.ImageButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/wiki_icon_button_background"
+                android:contentDescription="@string/close"
+                android:padding="8dp"
+                android:src="@drawable/wiki_close_icon"
+                android:tint="@color/wiki_text_primary" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/wiki_status_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/wiki_status_chip_background"
+            android:paddingStart="16dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="6dp"
+            android:text="@string/wiki_panel_status_idle"
+            android:textColor="@color/wiki_text_chip"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/wiki_message_list"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="16dp"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/wiki_empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="@string/wiki_panel_empty_state"
+            android:textColor="@color/wiki_text_secondary"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/wiki_resume_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/wiki_resume_button_background"
+            android:text="@string/wiki_panel_resume"
+            android:textAllCaps="false"
+            android:textColor="@color/wiki_text_primary"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/wiki_input_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/wiki_input_background"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="8dp">
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/wiki_prompt_input"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:hint="@string/wiki_panel_input_hint"
+                android:imeOptions="actionSend"
+                android:inputType="textCapSentences|textMultiLine"
+                android:maxLines="4"
+                android:minLines="1"
+                android:textColor="@color/wiki_text_primary"
+                android:textColorHint="@color/wiki_text_secondary"
+                android:textSize="15sp" />
+
+            <ImageButton
+                android:id="@+id/wiki_send_button"
+                style="@style/Widget.AppCompat.ImageButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/wiki_icon_button_background"
+                android:contentDescription="@string/wiki_panel_send"
+                android:padding="10dp"
+                android:src="@drawable/wiki_send_icon"
+                android:tint="@color/wiki_text_primary" />
+        </LinearLayout>
+    </LinearLayout>
+</org.chromium.chrome.browser.wiki.WikiPanelView>

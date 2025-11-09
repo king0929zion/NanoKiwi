@@ -155,6 +155,7 @@ public class ToolbarTablet
                 || isGridTabSwitcherEnabled();
 
         mAccessibilitySwitcherButton = findViewById(R.id.tab_switcher_button);
+        mAccessibilitySwitcherButton.enableWikiAppearance();
         updateSwitcherButtonVisibility(mShowTabStack);
 
         mBookmarkButton = findViewById(R.id.bookmark_button);
@@ -860,5 +861,12 @@ public class ToolbarTablet
     @VisibleForTesting
     void setToolbarButtonsVisibleForTesting(boolean value) {
         mToolbarButtonsVisible = value;
+    }
+
+    @Override
+    void setWikiAssistantActive(boolean active) {
+        if (mAccessibilitySwitcherButton != null) {
+            mAccessibilitySwitcherButton.setWikiGlow(active);
+        }
     }
 }

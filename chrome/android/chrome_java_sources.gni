@@ -1240,6 +1240,14 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/launchpad/LaunchpadUtils.java",
   "java/src/org/chromium/chrome/browser/webauth/authenticator/CableAuthenticatorActivity.java",
   "java/src/org/chromium/chrome/browser/webauth/authenticator/CableAuthenticatorUSBActivity.java",
+  "java/src/org/chromium/chrome/browser/wiki/SimulatedWikiAutomationClient.java",
+  "java/src/org/chromium/chrome/browser/wiki/WikiAiOverlayView.java",
+  "java/src/org/chromium/chrome/browser/wiki/WikiAutomationClient.java",
+  "java/src/org/chromium/chrome/browser/wiki/WikiAutomationState.java",
+  "java/src/org/chromium/chrome/browser/wiki/WikiController.java",
+  "java/src/org/chromium/chrome/browser/wiki/WikiMessage.java",
+  "java/src/org/chromium/chrome/browser/wiki/WikiMessageAdapter.java",
+  "java/src/org/chromium/chrome/browser/wiki/WikiPanelView.java",
   "java/src/org/chromium/chrome/browser/webshare/ShareServiceImplementationFactory.java",
 ]
 

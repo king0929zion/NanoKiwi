@@ -255,9 +255,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.AppMenuBridge;
-import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTabsFragment;
 import org.chromium.chrome.browser.night_mode.WebContentsDarkModeController;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.night_mode.ThemeType;
@@ -2832,18 +2830,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                       new LoadUrlParams("chrome://extensions", PageTransition.LINK),
                       TabLaunchType.FROM_CHROME_UI, getActivityTab());
             }
-        }
-
-        if (id == R.id.clear_data_menu_id) {
-            RecordUserAction.record("ClearBrowsingDataFromMainMenu");
-            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-            settingsLauncher.launchSettingsActivity(this, ClearBrowsingDataTabsFragment.class);
-        }
-
-        if (id == R.id.exit_id) {
-            RecordUserAction.record("MobileMenuExit");
-            getTabModelSelector().closeAllTabs();
-            ApplicationLifetime.terminate(false);
         }
 
         return false;

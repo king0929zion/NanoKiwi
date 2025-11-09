@@ -458,6 +458,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
     private void inflateTabSwitchingResources() {
         mToggleTabStackButton = findViewById(R.id.tab_switcher_button);
+        mToggleTabStackButton.enableWikiAppearance();
         mToggleTabStackButton.setClickable(false);
     }
 
@@ -2982,5 +2983,12 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     public boolean isAnimationRunningForTesting() {
         return mUrlFocusChangeInProgress || mBrandColorTransitionActive
                 || mOptionalButtonAnimationRunning;
+    }
+
+    @Override
+    void setWikiAssistantActive(boolean active) {
+        if (mToggleTabStackButton != null) {
+            mToggleTabStackButton.setWikiGlow(active);
+        }
     }
 }

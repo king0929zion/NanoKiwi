@@ -5,10 +5,13 @@
 package org.chromium.chrome.browser.toolbar.top;
 
 import android.content.Context;
+import android.content.Context;
+import android.content.res.ColorStateList;
 import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.theme.ThemeUtils;
@@ -31,6 +34,9 @@ public class ToggleTabStackButton
     private TabCountProvider mTabCountProvider;
     private OnClickListener mTabSwitcherListener;
     private OnLongClickListener mTabSwitcherLongClickListener;
+    private boolean mWikiAppearanceEnabled;
+    private boolean mWikiGlowEnabled;
+    private int mCurrentTint;
 
     public ToggleTabStackButton(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -43,6 +49,9 @@ public class ToggleTabStackButton
         mTabSwitcherButtonDrawable = TabSwitcherDrawable.createTabSwitcherDrawable(
                 getContext(), BrandedColorScheme.APP_DEFAULT);
         setImageDrawable(mTabSwitcherButtonDrawable);
+        mCurrentTint =
+                ThemeUtils.getThemedToolbarIconTint(getContext(), BrandedColorScheme.APP_DEFAULT);
+        enableWikiAppearance();
         setOnClickListener(this);
         setOnLongClickListener(this);
     }
@@ -52,6 +61,15 @@ public class ToggleTabStackButton
      */
     void destroy() {
         if (mTabCountProvider != null) mTabCountProvider.removeObserver(this);
+    }
+
+    void enableWikiAppearance() {
+        if (mWikiAppearanceEnabled) return;
+        mWikiAppearanceEnabled = true;
+        setImageResource(R.drawable.wiki_ai_icon);
+        setContentDescription(getResources().getString(R.string.accessibility_wiki_button));
+        ImageViewCompat.setImageTintList(
+                this, ColorStateList.valueOf(resolveWikiTint(/*glow=*/false)));
     }
 
     /**
@@ -73,8 +91,13 @@ public class ToggleTabStackButton
     }
 
     void setBrandedColorScheme(@BrandedColorScheme int brandedColorScheme) {
-        mTabSwitcherButtonDrawable.setTint(
-                ThemeUtils.getThemedToolbarIconTint(getContext(), brandedColorScheme));
+        mCurrentTint = ThemeUtils.getThemedToolbarIconTint(getContext(), brandedColorScheme);
+        if (mWikiAppearanceEnabled) {
+            ImageViewCompat.setImageTintList(
+                    this, ColorStateList.valueOf(resolveWikiTint(mWikiGlowEnabled)));
+        } else {
+            mTabSwitcherButtonDrawable.setTint(mCurrentTint);
+        }
     }
 
     /**
@@ -82,12 +105,14 @@ public class ToggleTabStackButton
      *                 current model.
      */
     void setTabCountProvider(TabCountProvider provider) {
+        if (mWikiAppearanceEnabled) return;
         mTabCountProvider = provider;
         mTabCountProvider.addObserverAndTrigger(this);
     }
 
     @Override
     public void onTabCountChanged(int numberOfTabs, boolean isIncognito) {
+        if (mWikiAppearanceEnabled) return;
         setEnabled(numberOfTabs >= 1);
         mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito);
     }
@@ -104,7 +129,9 @@ public class ToggleTabStackButton
         if (mTabSwitcherLongClickListener != null && isLongClickable()) {
             return mTabSwitcherLongClickListener.onLongClick(v);
         } else {
-            CharSequence description = getResources().getString(R.string.open_tabs);
+            CharSequence description = mWikiAppearanceEnabled
+                    ? getResources().getString(R.string.accessibility_wiki_button)
+                    : getResources().getString(R.string.open_tabs);
             return Toast.showAnchoredToast(getContext(), v, description);
         }
     }
@@ -121,5 +148,24 @@ public class ToggleTabStackButton
         try (TraceEvent e = TraceEvent.scoped("ToggleTabStackButton.onLayout")) {
             super.onLayout(changed, left, top, right, bottom);
         }
+    }
+
+    void setWikiGlow(boolean glow) {
+        if (!mWikiAppearanceEnabled) return;
+        if (mWikiGlowEnabled == glow) return;
+        mWikiGlowEnabled = glow;
+        float scale = glow ? 1.08f : 1f;
+        animate().scaleX(scale).scaleY(scale).setDuration(180L).start();
+        ImageViewCompat.setImageTintList(
+                this, ColorStateList.valueOf(resolveWikiTint(glow)));
+    }
+
+    private int resolveWikiTint(boolean glowActive) {
+        if (glowActive) {
+            return getResources().getColor(R.color.wiki_glow_secondary);
+        }
+        return mCurrentTint != 0 ? mCurrentTint
+                                 : ThemeUtils.getThemedToolbarIconTint(
+                                           getContext(), BrandedColorScheme.APP_DEFAULT);
     }
 }

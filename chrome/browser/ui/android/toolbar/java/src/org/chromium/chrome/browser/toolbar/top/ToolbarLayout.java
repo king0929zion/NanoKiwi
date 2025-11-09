@@ -872,4 +872,7 @@ public abstract class ToolbarLayout
      */
     public void setBrowserControlsVisibilityDelegate(
             BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate) {}
+
+    /** Hook for the Wiki assistant to update toolbar visuals. */
+    void setWikiAssistantActive(boolean active) {}
 }

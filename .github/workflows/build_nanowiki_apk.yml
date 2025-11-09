@@ -1,0 +1,267 @@
+# Build and sign NanoWiki APK
+name: 'Build NanoWiki APK'
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - kiwi
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - master
+      - kiwi
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Target platform (arm, arm64, x86, x64)'
+        required: true
+        default: 'arm64'
+        type: choice
+        options:
+          - arm
+          - arm64
+          - x86
+          - x64
+
+env:
+  ANDROID_API_LEVEL: 33
+  JAVA_VERSION: 17
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # 6 hours timeout for Chromium builds
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.platform || 'arm64' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3 \
+            python3-pip \
+            python3-dev \
+            openjdk-${{ env.JAVA_VERSION }}-jdk-headless \
+            ccache \
+            git \
+            curl \
+            wget \
+            unzip \
+            build-essential \
+            ninja-build \
+            pkg-config \
+            libnss3-dev \
+            libatk-bridge2.0-dev \
+            libdrm2 \
+            libxkbcommon-dev \
+            libxcomposite-dev \
+            libxdamage-dev \
+            libxrandr-dev \
+            libgbm-dev \
+            libasound2-dev \
+            libpango1.0-dev
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          target: default
+          arch: x86_64
+
+      - name: Configure Android environment
+        run: |
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+
+      - name: Install depot_tools
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          export PATH="$PWD/depot_tools:$PATH"
+          echo "$PWD/depot_tools" >> $GITHUB_PATH
+          gclient --version
+
+      - name: Setup signing key
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "Using provided keystore from secrets"
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+            echo "keystore_password=${{ secrets.KEYSTORE_PASSWORD }}" > keystore.properties
+            echo "key_alias=${{ secrets.KEY_ALIAS || 'nanowiki' }}" >> keystore.properties
+            echo "key_password=${{ secrets.KEY_PASSWORD }}" >> keystore.properties
+          else
+            echo "Generating temporary keystore for testing"
+            keytool -genkey -v \
+              -keystore keystore.jks \
+              -alias nanowiki \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass nanowiki123 \
+              -keypass nanowiki123 \
+              -dname "CN=NanoWiki Browser, OU=Development, O=NanoWiki, L=Unknown, ST=Unknown, C=CN"
+            echo "keystore_password=nanowiki123" > keystore.properties
+            echo "key_alias=nanowiki" >> keystore.properties
+            echo "key_password=nanowiki123" >> keystore.properties
+          fi
+
+      - name: Create build configuration
+        run: |
+          mkdir -p out/Default
+          cat > out/Default/args.gn << 'EOF'
+          target_os = "android"
+          target_cpu = "${{ matrix.platform }}"
+          is_debug = false
+          is_official_build = true
+          symbol_level = 1
+          enable_nacl = false
+          enable_remoting = false
+          enable_webview = false
+          is_component_build = false
+          use_goma = false
+          use_remoteexec = false
+          use_siso = false
+          android_channel = "stable"
+          android_default_version_name = "1.0.${{ github.run_number }}"
+          android_default_version_code = "${{ github.run_number }}000000"
+          EOF
+          cat out/Default/args.gn
+
+      - name: Generate build files
+        run: |
+          export PATH="$PWD/depot_tools:$PATH"
+          gn gen out/Default --args='import("//out/Default/args.gn")'
+        continue-on-error: true
+
+      - name: Build APK
+        timeout-minutes: 300
+        run: |
+          export PATH="$PWD/depot_tools:$PATH"
+          export CCACHE_DIR="$HOME/.ccache"
+          ccache -M 10G
+          autoninja -C out/Default chrome_public_apk
+        continue-on-error: true
+
+      - name: Find and sign APK
+        if: always()
+        run: |
+          # Find the built APK
+          if [ -f "out/Default/apks/ChromePublic.apk" ]; then
+            APK_FILE="out/Default/apks/ChromePublic.apk"
+          elif [ -f "out/Default/apks/Chrome.apk" ]; then
+            APK_FILE="out/Default/apks/Chrome.apk"
+          else
+            APK_FILE=$(find out/Default -name "*.apk" -type f | head -1)
+          fi
+          
+          if [ -z "$APK_FILE" ] || [ ! -f "$APK_FILE" ]; then
+            echo "No APK found. Build may have failed."
+            exit 1
+          fi
+          
+          echo "Found APK: $APK_FILE"
+          
+          # Read keystore properties
+          source keystore.properties
+          
+          # Sign APK
+          SIGNED_APK="NanoWiki-${{ matrix.platform }}-v${{ github.run_number }}-signed.apk"
+          
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore keystore.jks \
+            -storepass "$keystore_password" \
+            -keypass "$key_password" \
+            "$APK_FILE" \
+            "$key_alias"
+          
+          # Align APK
+          zipalign -v 4 "$APK_FILE" "$SIGNED_APK"
+          
+          # Verify signature
+          jarsigner -verify -verbose -certs "$SIGNED_APK"
+          
+          echo "APK_FILE=$SIGNED_APK" >> $GITHUB_ENV
+          echo "APK_SIZE=$(du -h $SIGNED_APK | cut -f1)" >> $GITHUB_ENV
+
+      - name: Upload APK artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nanowiki-apk-${{ matrix.platform }}
+          path: |
+            ${{ env.APK_FILE }}
+            out/Default/apks/*.apk
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Create Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: NanoWiki ${{ github.ref_name }}
+          body: |
+            ## NanoWiki Browser Release
+            
+            **Platform**: ${{ matrix.platform }}
+            **Build Number**: ${{ github.run_number }}
+            **Commit**: ${{ github.sha }}
+            **APK Size**: ${{ env.APK_SIZE }}
+            
+            ### Installation Instructions
+            
+            1. Download the APK for your device architecture:
+               - **arm64**: Modern devices (recommended)
+               - **arm**: Older devices  
+               - **x86/x64**: Emulators and Intel tablets
+            
+            2. Enable "Install from unknown sources" in Android settings
+            
+            3. Install the APK
+            
+            ### Features
+            
+            - Built-in Wiki AI Assistant
+            - Anthropic/Claude style UI
+            - Mobile-optimized interface
+            - Privacy-focused browsing
+            
+            ### Notes
+            
+            This is an automated build from GitHub Actions. The APK is signed with the development key.
+          files: ${{ env.APK_FILE }}
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload build logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-${{ matrix.platform }}
+          path: |
+            out/Default/*.log
+            out/Default/.ninja_log
+          retention-days: 7

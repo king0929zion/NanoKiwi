@@ -192,6 +192,7 @@ import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.undo_tab_close_snackbar.UndoBarController;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
+import org.chromium.chrome.browser.wiki.WikiController;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceDelegate;
@@ -393,6 +394,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private ReadingListBackPressHandler mReadingListBackPressHandler;
     private TabSwitcherBackPressHandler mTabSwitcherBackPressHandler;
     private MinimizeAppAndCloseTabBackPressHandler mMinimizeAppAndCloseTabBackPressHandler;
+    private WikiController mWikiController;
 
     // ID assigned to each ChromeTabbedActivity instance in Android S+ where multi-instance feature
     // is supported. This can be explicitly set in the incoming Intent or internally assigned.
@@ -818,23 +820,17 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.initializeToolbarManager")) {
             mUndoBarPopupController.initialize();
 
+            if (mWikiController == null) {
+                mWikiController = new WikiController(this);
+                mWikiController.addObserver(
+                        isRunning -> getToolbarManager().setWikiAssistantActive(isRunning));
+            }
+
             OnClickListener tabSwitcherClickHandler = v -> {
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.TOOLBAR_IPH_ANDROID)) {
-                    Profile profile = mTabModelProfileSupplier.get();
-                    if (profile != null) {
-                        TrackerFactory.getTrackerForProfile(profile).notifyEvent(
-                                EventConstants.TAB_SWITCHER_BUTTON_CLICKED);
-                    }
-                }
-
-                if (getFullscreenManager().getPersistentFullscreenMode()) {
-                    return;
-                }
-
-                if (isInOverviewMode() && !ReturnToChromeUtil.isStartSurfaceEnabled(this)) {
-                    hideOverview();
-                } else {
-                    showOverview(StartSurfaceState.SHOWING_TABSWITCHER);
+                if (getFullscreenManager().getPersistentFullscreenMode()) return;
+                if (mWikiController != null) {
+                    RecordUserAction.record("MobileWikiIconTapped");
+                    mWikiController.togglePanel();
                 }
             };
             OnClickListener newTabClickHandler = v -> {
@@ -2287,6 +2283,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     public boolean handleBackPressed() {
         if (!mUIWithNativeInitialized) return false;
 
+        if (mWikiController != null && mWikiController.onBackPressed()) {
+            BackPressManager.record(BackPressHandler.Type.TAB_SWITCHER_TO_BROWSING);
+            return true;
+        }
+
         if (mTabModalHandler.onBackPressed()) {
             BackPressManager.record(BackPressHandler.Type.TAB_MODAL_HANDLER);
             return true;
@@ -2729,6 +2730,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         mAppLaunchDrawBlocker.destroy();
 
+        if (mWikiController != null) {
+            mWikiController.destroy();
+            mWikiController = null;
+        }
+
         super.onDestroyInternal();
     }
 
@@ -3004,3 +3010,4 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         });
     }
 }
+

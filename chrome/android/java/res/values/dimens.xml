@@ -462,4 +462,8 @@
 
     <!-- Price Drop dimensions -->
     <dimen name="price_drop_spotted_iph_ntp_tabswitcher_y_inset">4dp</dimen>
+
+    <!-- Wiki surfaces -->
+    <dimen name="wiki_corner_radius">20dp</dimen>
+    <dimen name="wiki_corner_radius_large">26dp</dimen>
 </resources>

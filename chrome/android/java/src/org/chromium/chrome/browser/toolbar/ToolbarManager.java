@@ -309,6 +309,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             new ObservableSupplierImpl<>();
 
     private boolean mIsDestroyed;
+    private boolean mWikiAssistantActive;
 
     private static class TabObscuringCallback implements Callback<Boolean> {
         private final TabObscuringHandler mTabObscuringHandler;
@@ -2072,5 +2073,14 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     @VisibleForTesting
     public ToolbarTabController getToolbarTabControllerForTesting() {
         return mToolbarTabController;
+    }
+
+    /** Updates the toolbar button visuals when the Wiki assistant state changes. */
+    public void setWikiAssistantActive(boolean active) {
+        if (mWikiAssistantActive == active) return;
+        mWikiAssistantActive = active;
+        if (mToolbar != null) {
+            mToolbar.setWikiAssistantActive(active);
+        }
     }
 }
