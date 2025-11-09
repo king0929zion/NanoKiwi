@@ -78,6 +78,14 @@ jobs:
             libasound2-dev \
             libpango1.0-dev
 
+      - name: Check disk space
+        run: |
+          echo "Checking available disk space..."
+          df -h
+          echo "Current directory: $(pwd)"
+          echo "Available space:"
+          df -h . | tail -1
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -87,6 +95,11 @@ jobs:
 
       - name: Configure Android environment
         run: |
+          if [ -z "$ANDROID_SDK_ROOT" ]; then
+            echo "Error: ANDROID_SDK_ROOT is not set"
+            exit 1
+          fi
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
           echo "$ANDROID_SDK_ROOT/tools:$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
@@ -133,7 +146,23 @@ jobs:
       - name: Setup Chromium source tree
         timeout-minutes: 120
         run: |
+          echo "=== Starting Chromium source tree setup ==="
+          echo "Current directory: $(pwd)"
+          echo "Disk space before sync:"
+          df -h .
+          
           export PATH="$PWD/depot_tools:$PATH"
+          
+          # Verify depot_tools is in PATH
+          if ! command -v gclient &> /dev/null; then
+            echo "Error: gclient not found in PATH"
+            echo "PATH=$PATH"
+            exit 1
+          fi
+          
+          echo "gclient version:"
+          gclient --version || echo "Warning: gclient --version failed"
+          
           # Create .gclient file to sync Chromium source
           cat > .gclient << 'EOF'
           solutions = [
@@ -145,6 +174,10 @@ jobs:
             },
           ]
           EOF
+          
+          echo ".gclient file created:"
+          cat .gclient
+          
           # Sync Chromium source code (shallow sync to save time and space)
           echo "Syncing Chromium source code (this may take 30-60 minutes)..."
           echo "This is a large download (~10GB+), please be patient..."
@@ -155,28 +188,46 @@ jobs:
           SYNC_SUCCESS=false
           
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES..."
-            if gclient sync --no-history --shallow --jobs=16 --nohooks --verbose; then
+            echo "=== Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES ==="
+            echo "Disk space before sync attempt:"
+            df -h .
+            
+            set +e  # Don't exit on error
+            if gclient sync --no-history --shallow --jobs=16 --nohooks --verbose 2>&1 | tee sync.log; then
               SYNC_SUCCESS=true
+              set -e
               break
             else
+              SYNC_EXIT_CODE=$?
+              echo "gclient sync failed with exit code: $SYNC_EXIT_CODE"
+              echo "Last 50 lines of sync.log:"
+              tail -50 sync.log || echo "No sync.log found"
               RETRY_COUNT=$((RETRY_COUNT + 1))
               if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
                 echo "Sync failed, waiting 30 seconds before retry..."
                 sleep 30
               fi
             fi
+            set -e
           done
           
           if [ "$SYNC_SUCCESS" = false ]; then
-            echo "Error: gclient sync failed after $MAX_RETRIES attempts"
+            echo "=== Error: gclient sync failed after $MAX_RETRIES attempts ==="
             echo "Checking if src directory exists..."
             if [ -d "src" ]; then
-              echo "Warning: Partial sync detected, continuing with existing files..."
+              echo "Warning: Partial sync detected, checking contents..."
+              ls -la src/ | head -20 || echo "Cannot list src directory"
+              echo "Continuing with existing files..."
             else
               echo "Error: Chromium source directory 'src' not found"
+              echo "Current directory contents:"
+              ls -la | head -20
               exit 1
             fi
+          else
+            echo "=== Chromium sync completed successfully ==="
+            echo "Disk space after sync:"
+            df -h .
           fi
           
           # Copy current repository files over Chromium source (overwrite with custom changes)
